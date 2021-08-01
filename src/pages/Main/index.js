@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { FaGithub, FaPlus, FaSpinner, FaBars, FaTrash } from "react-icons/fa";
 import api from "../../services/api";
 import * as S from "./styles";
@@ -10,8 +10,25 @@ export default function Main() {
 
   const [loading, setLoading] = useState(false);
 
+  const [alert, setAlert] = useState(null);
+
+  //buscar os dados no storage
+  useEffect(() => {
+    const repoStorage = localStorage.getItem("GITFAV");
+
+    if (repoStorage) {
+      setRepository(JSON.parse(repoStorage));
+    }
+  }, []);
+
+  //Salvando os repos em storagelocal
+  useEffect(() => {
+    localStorage.setItem("GITFAV", JSON.stringify(repository));
+  }, [repository]);
+
   function handleInputChange(e) {
     setNewRepo(e.target.value);
+    setAlert(null);
   }
 
   const handleSubmit = useCallback(
@@ -19,8 +36,19 @@ export default function Main() {
       e.preventDefault();
       async function submit() {
         setLoading(true);
+        setAlert(null);
         try {
+          if (newRepo === "") {
+            throw new Error("Repositorio em branco.");
+          }
+
           const response = await api.get(`repos/${newRepo}`);
+
+          const hasRepo = repository.find((repo) => repo.name === newRepo);
+
+          if (hasRepo) {
+            throw new Error("Repositorio já existe em seus favoritos.");
+          }
 
           const data = {
             name: response.data.full_name,
@@ -30,6 +58,7 @@ export default function Main() {
 
           setNewRepo("");
         } catch (error) {
+          setAlert(true);
           console.log(error);
         } finally {
           setLoading(false);
@@ -56,7 +85,7 @@ export default function Main() {
         <FaGithub size={25} /> Meus Favoritos
       </h1>
 
-      <S.Form onSubmit={handleSubmit}>
+      <S.Form onSubmit={handleSubmit} error={alert}>
         <input
           type="text"
           placeholder="Add repo"
