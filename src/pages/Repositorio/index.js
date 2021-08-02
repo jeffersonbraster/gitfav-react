@@ -10,6 +10,8 @@ export default function Repositorio({ match }) {
 
   const [loading, setLoading] = useState(true);
 
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
     async function loadRepo() {
       const nomeRepo = decodeURIComponent(match.params.repository);
@@ -31,6 +33,28 @@ export default function Repositorio({ match }) {
 
     loadRepo();
   }, [match.params.repository]);
+
+  useEffect(() => {
+    async function loadIssues() {
+      const nomeRepo = decodeURIComponent(match.params.repository);
+
+      const response = await api.get(`/repos/${nomeRepo}/issues`, {
+        params: {
+          state: "open",
+          page,
+          per_page: 5,
+        },
+      });
+
+      setIssues(response.data);
+    }
+
+    loadIssues();
+  }, [match.params.repository, page]);
+
+  function handlePage(action) {
+    setPage(action === "back" ? page - 1 : page + 1);
+  }
 
   if (loading) {
     return (
@@ -73,6 +97,19 @@ export default function Repositorio({ match }) {
           </li>
         ))}
       </S.IssuesList>
+
+      <S.PageActions>
+        <button
+          type="button"
+          onClick={() => handlePage("back")}
+          disabled={page < 2}
+        >
+          Voltar
+        </button>
+        <button type="button" onClick={() => handlePage("next")}>
+          Proxima
+        </button>
+      </S.PageActions>
     </S.Container>
   );
 }
