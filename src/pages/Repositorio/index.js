@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-target-blank */
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import api from "../../services/api";
@@ -51,6 +52,27 @@ export default function Repositorio({ match }) {
 
         <p>{repo.description}</p>
       </S.Owner>
+
+      <S.IssuesList>
+        {issues.map((issue) => (
+          <li key={String(issue.id)}>
+            <img src={issue.user.avatar_url} alt={issue.user.login} />
+
+            <div>
+              <strong>
+                <a href={issue.html_url} target="_blank">
+                  {issue.title}
+                </a>
+                {issue.labels.map((label) => (
+                  <span key={String(label.id)}>{label.name}</span>
+                ))}
+              </strong>
+
+              <p>{issue.user.login}</p>
+            </div>
+          </li>
+        ))}
+      </S.IssuesList>
     </S.Container>
   );
 }
