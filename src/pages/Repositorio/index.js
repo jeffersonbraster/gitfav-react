@@ -12,6 +12,14 @@ export default function Repositorio({ match }) {
 
   const [page, setPage] = useState(1);
 
+  const [filters, setFilters] = useState([
+    { state: "all", label: "Todas", active: true },
+    { state: "open", label: "Abertas", active: false },
+    { state: "closed", label: "Fechadas", active: false },
+  ]);
+
+  const [filterIndex, setFilterIndex] = useState(0);
+
   useEffect(() => {
     async function loadRepo() {
       const nomeRepo = decodeURIComponent(match.params.repository);
@@ -40,7 +48,7 @@ export default function Repositorio({ match }) {
 
       const response = await api.get(`/repos/${nomeRepo}/issues`, {
         params: {
-          state: "open",
+          state: filters[filterIndex].state,
           page,
           per_page: 5,
         },
@@ -50,10 +58,14 @@ export default function Repositorio({ match }) {
     }
 
     loadIssues();
-  }, [match.params.repository, page]);
+  }, [match.params.repository, page, filters, filterIndex]);
 
   function handlePage(action) {
     setPage(action === "back" ? page - 1 : page + 1);
+  }
+
+  function handleFilter(index) {
+    setFilterIndex(index);
   }
 
   if (loading) {
@@ -69,6 +81,7 @@ export default function Repositorio({ match }) {
       <S.BackButton to="/">
         <FaArrowLeft color="#030517" size={30} />
       </S.BackButton>
+
       <S.Owner>
         <img src={repo.owner.avatar_url} alt={repo.owner.login} />
 
@@ -76,6 +89,18 @@ export default function Repositorio({ match }) {
 
         <p>{repo.description}</p>
       </S.Owner>
+
+      <S.FilterList active={filterIndex}>
+        {filters.map((filter, index) => (
+          <button
+            type="button"
+            key={filter.label}
+            onClick={() => handleFilter(index)}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </S.FilterList>
 
       <S.IssuesList>
         {issues.map((issue) => (
