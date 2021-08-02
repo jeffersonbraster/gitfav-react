@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 import api from "../../services/api";
 import * as S from "./styles";
 
@@ -30,5 +31,26 @@ export default function Repositorio({ match }) {
     loadRepo();
   }, [match.params.repository]);
 
-  return <S.Container></S.Container>;
+  if (loading) {
+    return (
+      <S.Loading>
+        <h1>Carregando..</h1>
+      </S.Loading>
+    );
+  }
+
+  return (
+    <S.Container>
+      <S.BackButton to="/">
+        <FaArrowLeft color="#030517" size={30} />
+      </S.BackButton>
+      <S.Owner>
+        <img src={repo.owner.avatar_url} alt={repo.owner.login} />
+
+        <h1>{repo.name}</h1>
+
+        <p>{repo.description}</p>
+      </S.Owner>
+    </S.Container>
+  );
 }
